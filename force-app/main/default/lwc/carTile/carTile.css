@@ -1,0 +1,17 @@
+img.carImage {
+    height: 120px;
+    max-width: initial;
+    pointer-events: none;
+}
+
+.title {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.content {
+    padding: 8px;
+    background-color: #fff;
+    border-radius: 0.25rem;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}

@@ -9,6 +9,11 @@ import MAKE_FIELD from '@salesforce/schema/Car__c.Make__c';
 const CATEGORY_ERROR = 'Error loading categories';
 const MAKE_ERROR = 'Error loading makes';
 
+// Lightnin Message Service and a message channel;
+import CARS_FILTERED_MESSAGE from '@salesforce/messageChannel/carsFiltered__c';
+import { publish, MessageContext } from 'lightning/messageService';
+
+
 export default class CarFilter extends LightningElement {
     filters={
         searchKey: '',
@@ -18,6 +23,10 @@ export default class CarFilter extends LightningElement {
     categoryError = CATEGORY_ERROR;
     makeError = MAKE_ERROR;
     timer;
+
+    /**Load context for LMS */
+    @wire(MessageContext)
+    messageContext;
 
     @wire(getObjectInfo, { objectApiName: CAR_OBJECT})
     carObjectInfo;
@@ -38,12 +47,8 @@ export default class CarFilter extends LightningElement {
    
 
     handleSearchKeyChange(e) {
-        window.clearTimeout(this.timer);
         const val = e.target.value;
-
-        this.timer = setTimeout(() => {
-            this.filters = {...this.filters, 'searchKey': val};
-        }, 500);
+        this.debounce('searchKey', val, 500);
     }
     
     handleMaxPriceChange(e) {
@@ -53,7 +58,19 @@ export default class CarFilter extends LightningElement {
     handleCheckbox(e) {
         const { name, value } = e.target.dataset;
 
-        console.log(name, ' ', value);
+    }
+
+    sendDataToCarList() {
+        publish(this.messageContext, CARS_FILTERED_MESSAGE, { filters: this.filters });
+    }
+
+    debounce(field, val, delay) {
+        window.clearTimeout(this.timer);
+
+        this.timer = setTimeout(() => {
+            this.filters = {...this.filters, [field]: val};
+            this.sendDataToCarList();
+        }, delay);
     }
 
 }
