@@ -52,11 +52,14 @@ export default class CarFilter extends LightningElement {
     }
     
     handleMaxPriceChange(e) {
-        this.filters = {...this.filters, 'maxPrice': e.target.value}
+        const val = e.target.value;
+        this.debounce('maxPrice', val, 1000);
     }
 
     handleCheckbox(e) {
         const { name, value } = e.target.dataset;
+
+        console.log(JSON.stringify(this.categories.data.values));
 
     }
 
