@@ -17,7 +17,7 @@ import { publish, MessageContext } from 'lightning/messageService';
 export default class CarFilter extends LightningElement {
     filters={
         searchKey: '',
-        maxPrice: 999999 
+        maxPrice: 999999,
     }
 
     categoryError = CATEGORY_ERROR;
@@ -48,32 +48,57 @@ export default class CarFilter extends LightningElement {
 
     handleSearchKeyChange(e) {
         const val = e.target.value;
-        this.debounce('searchKey', val, 500);
+        // this.debounce('searchKey', val, 500);
+        this.filters = {...this.filters, searchKey: val}
+        this.sendDataToCarList();
     }
     
     handleMaxPriceChange(e) {
         const val = e.target.value;
-        this.debounce('maxPrice', val, 1000);
+        // this.debounce('maxPrice', val, 1000);
+        this.filters = {...this.filters, maxPrice: val}
+        this.sendDataToCarList();
     }
-
+    
     handleCheckbox(e) {
+        if (!this.filters.categories) {
+            const categories = this.categories.data.values.map(el => el.value);
+            const makeType = this.makeType.data.values.map(el => el.value);
+            
+            this.filters = {...this.filters, categories, makeType};
+        }
+        
         const { name, value } = e.target.dataset;
+        
+        if (e.target.checked) {
+            if (!this.filters[name].includes(value)) {
+                this.filters[name] = [...this.filters[name], value];
+            }
+        } else {
+            this.filters[name] = this.filters[name].filter(el => el !== value);
+        }
 
-        console.log(JSON.stringify(this.categories.data.values));
+        // console.log(JSON.stringify(this.filters));
 
+        // this.debounce(name, this.filters[name], 1000);
+        this.sendDataToCarList();
     }
-
+    
     sendDataToCarList() {
-        publish(this.messageContext, CARS_FILTERED_MESSAGE, { filters: this.filters });
-    }
-
-    debounce(field, val, delay) {
         window.clearTimeout(this.timer);
 
-        this.timer = setTimeout(() => {
-            this.filters = {...this.filters, [field]: val};
-            this.sendDataToCarList();
-        }, delay);
+        this.timer = window.setTimeout(() => {
+            publish(this.messageContext, CARS_FILTERED_MESSAGE, { filters: this.filters });
+        }, 500);
     }
+
+    // debounce(field, val, delay) {
+    //     window.clearTimeout(this.timer);
+
+    //     this.timer = setTimeout(() => {
+    //         this.filters = {...this.filters, [field]: val};
+    //         this.sendDataToCarList();
+    //     }, delay);
+    // }
 
 }
