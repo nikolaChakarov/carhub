@@ -10,7 +10,7 @@ const CATEGORY_ERROR = 'Error loading categories';
 const MAKE_ERROR = 'Error loading makes';
 
 // Lightnin Message Service and a message channel;
-import CARS_FILTERED_MESSAGE from '@salesforce/messageChannel/carsFiltered__c';
+import CARS_FILTERED_MESSAGE from '@salesforce/messageChannel/CarsFiltered__c';
 import { publish, MessageContext } from 'lightning/messageService';
 
 

@@ -1,4 +1,4 @@
-import { LightningElement } from 'lwc';
+import { LightningElement, wire } from 'lwc';
 
 // Car__c Schema
 import NAME_FIELD from '@salesforce/schema/Car__c.Name';
@@ -9,12 +9,20 @@ import MSRP_FIELD from '@salesforce/schema/Car__c.MSRP__c';
 import FUEL_FIELD from '@salesforce/schema/Car__c.Fuel_Type__c';
 import SEATS_FIELD from '@salesforce/schema/Car__c.Number_of_Seats__c';
 import CONTROL_FIELD from '@salesforce/schema/Car__c.Control__c';
+// this function is used to extract field values;
+import { getFieldValue } from 'lightning/uiRecordApi';
 
+import CAR_SELECTED_MESSAGE from '@salesforce/messageChannel/CarSelected__c';
+import { subscribe, MessageContext, unsubscribe } from 'lightning/messageService';
 
 
 export default class CarCard extends LightningElement {
+    // load content for LMS
+    @wire(MessageContext)
+    messageContext;
+
     // exposing fields to make them available in the template
-    categoryFeild = CATEGORY_FIELD;
+    categoryField = CATEGORY_FIELD;
     makeField = MAKE_FIELD;
     msrpField = MSRP_FIELD;
     fuelField = FUEL_FIELD;
@@ -22,5 +30,36 @@ export default class CarCard extends LightningElement {
     controlField = CONTROL_FIELD;
 
     // Id of Car__c to display data;
-    recordId = 'a0068000005jotnAAA'
+    recordId;
+
+
+    // car fields displayed with specific format;
+    carName;
+    carPictureUrl;
+    carSelectionSubscription;
+
+    handleRecordLoaded(ev) {
+        const {records} = ev.detail;
+        const recordData = records[this.recordId];
+
+        this.carName = getFieldValue(recordData, NAME_FIELD);
+        this.carPictureUrl = getFieldValue(recordData, PICTURE_URL_FIELD);
+    }
+
+    subscribeHandler() {
+        this.carSelectionSubscription = subscribe(this.messageContext, CAR_SELECTED_MESSAGE, (message) => this.handleCarSelected(message))
+    }
+
+    handleCarSelected(customEvent) {
+        this.recordId = customEvent.id;
+    }
+
+    connectedCallback() {
+        this.subscribeHandler();
+    }
+
+    disconnectedCallback() {
+        unsubscribe(this.carSelectionSubscription);
+        this.carSelectionSubscription = null;
+    }
 }
