@@ -4,7 +4,7 @@
         icon-name="standard:account"
     >
        <div class="slds-p-around_medium wrapper">
-            <template if:true={cars}>
+            <template if:true={cars.length}>
                 <div class="content">
                     <template for:each={cars} for:item="car">
                         <c-car-tile
@@ -14,6 +14,10 @@
                         ></c-car-tile>
                     </template>
                 </div>
+            </template>
+
+            <template if:false={cars.length}>
+                <c-placeholder message="There are no car matching your current selection"></c-placeholder>
             </template>
        </div>
     </lightning-card>
